@@ -1,7 +1,6 @@
-const { Model } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
+const sequelize = require('../../config/db-connect');
 
-
-module.exports = (sequelize, DataTypes) => {
   class Template extends Model {
     static associate(models) {
       this.belongsToMany(models.Category, {
@@ -15,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'template_id',
         as: 'variables',
       });
+
     }
   }
   Template.init({
@@ -41,5 +41,5 @@ module.exports = (sequelize, DataTypes) => {
     createdAt: 'created_at',
     updatedAt: 'updated_at',
   });
-  return Template;
-};
+
+  module.exports = Template;

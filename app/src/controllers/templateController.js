@@ -1,147 +1,133 @@
-const db = require('../models');
+const { Template, Variable, Category } = require('../models');
 
-// Retorna todos os templates
-const getAll = async (req, res) => {
+class TemplateController {
+  async list(req, res, next) {
     try {
-        const templates = await db.Template.findAll({
-            include: ['categories', 'variables'],
-        });
-        res.json(templates);
+      const templates = await Template.findAll({
+        include: ['categories', 'variables'],
+      });
+      res.json(templates);
     } catch (error) {
-        res.status(500).send({
-            message: 'Ocorreu um erro ao buscar os templates',
-        });
+      next(error);
     }
-};
+  }
 
-// Retorna um template por ID
-const getById = async (req, res) => {
+  async getById(req, res, next) {
     const { id } = req.params;
 
     try {
-        const template = await db.Template.findByPk(id, {
-            include: ['categories', 'variables'],
-        });
+      const template = await Template.findByPk(id, {
+        include: ['categories', 'variables'],
+      });
 
-        if (template) {
-            res.json(template);
-        } else {
-            res.status(404).send({
-                message: 'Não foi possível encontrar o template com o ID fornecido',
-            });
-        }
+      if (template) {
+        res.json(template);
+      } else {
+        res.status(404).send({
+          message: 'Não foi possível encontrar o template com o ID fornecido',
+        });
+      }
     } catch (error) {
-        res.status(500).send({
-            message: 'Ocorreu um erro ao buscar o template',
-        });
+      next(error);
     }
-};
+  }
 
-// Cria um novo template
-const create = async (req, res) => {
+  async create(req, res, next) {
     const { title, text, categories, variables } = req.body;
 
     try {
-        const template = await db.Template.create({
-            title,
-            text,
+      const template = await Template.create({
+        title,
+        text,
+      });
+
+      if (categories && categories.length > 0) {
+        const cats = await Category.findAll({
+          where: {
+            id: categories,
+          },
         });
+        await template.addCategories(cats);
+      }
 
-        if (categories && categories.length > 0) {
-            const cats = await db.Category.findAll({
-                where: {
-                    id: categories,
-                },
-            });
-            await template.addCategories(cats);
-        }
+      if (variables && variables.length > 0) {
+        const vars = await Variable.findAll({
+          where: {
+            id: variables,
+          },
+        });
+        await template.addVariables(vars);
+      }
 
-        if (variables && variables.length > 0) {
-            const vars = await db.Variable.findAll({
-                where: {
-                    id: variables,
-                },
-            });
-            await template.addVariables(vars);
-        }
-
-        res.status(201).json(template);
+      res.status(201).json(template);
     } catch (error) {
-        res.status(500).send({
-            message: 'Ocorreu um erro ao criar o template',
-        });
+      next(error);
     }
-};
+  }
 
-// Atualiza um template existente
-const update = async (req, res) => {
+  async update(req, res, next) {
     const { id } = req.params;
     const { title, text, categories, variables } = req.body;
 
     try {
-        const template = await db.Template.findByPk(id);
+      const template = await Template.findByPk(id);
 
-        if (template) {
-            await template.update({
-                title,
-                text,
-            });
-
-            if (categories) {
-                const cats = await db.Category.findAll({
-                    where: {
-                        id: categories,
-                    },
-                });
-                await template.setCategories(cats);
-            }
-
-            if (variables) {
-                const vars = await db.Variable.findAll({
-                    where: {
-                        id: variables,
-                    },
-                });
-                await template.setVariables(vars);
-            }
-
-            res.json(template);
-        } else {
-            res.status(404).send({
-                message: 'Não foi possível encontrar o template com o ID fornecido',
-            });
-        }
-    } catch (error) {
-        res.status(500).send({
-            message: 'Ocorreu um erro ao atualizar o template',
+      if (template) {
+        await template.update({
+          title,
+          text,
         });
-    }
-};
 
-// Remove um template existente
-const remove = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const deleted = await db.Template.destroy({
+        if (categories) {
+          const cats = await Category.findAll({
             where: {
-                id,
+              id: categories,
             },
-        });
-
-        if (deleted) {
-            res.sendStatus(204);
-        } else {
-            res.status(404).send({
-                message: 'Não foi possível encontrar o template com o ID fornecido',
-            });
+          });
+          await template.setCategories(cats);
         }
-    } catch (error) {
-        res.status(500).send({
-            message: 'Ocorreu um erro ao remover o template',
+
+        if (variables) {
+          const vars = await Variable.findAll({
+            where: {
+              id: variables,
+            },
+          });
+          await template.setVariables(vars);
+        }
+
+        res.json(template);
+      } else {
+        res.status(404).send({
+          message: 'Não foi possível encontrar o template com o ID fornecido',
         });
+      }
+    } catch (error) {
+      next(error);
     }
-};
+  }
 
+  async delete(req, res, next) {
+    const { id } = req.params;
 
+    try {
+      const deleted = await Template.destroy({
+        where: {
+          id,
+        },
+      });
 
+      if (deleted) {
+        res.sendStatus(204);
+      } else {
+        res.status(404).send({
+          message: 'Não foi possível encontrar o template com o ID fornecido',
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+module.exports = new TemplateController();
