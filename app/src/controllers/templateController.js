@@ -66,15 +66,6 @@ class TemplateController {
         await template.addCategoryTemplate(cats);
       }
 
-      // if (variables && variables.length > 0) {
-      //   const vars = await Variable.findAll({
-      //     where: {
-      //       id: variables,
-      //     },
-      //   });
-      //   await template.addVariables(vars);
-      // }
-
       res.status(201).json(template);
     } catch (error) {
       next(error);
@@ -102,15 +93,6 @@ class TemplateController {
           });
           await template.setCategoryTemplate(cats);
         }
-
-        // if (variables) {
-        //   const vars = await Variable.findAll({
-        //     where: {
-        //       id: variables,
-        //     },
-        //   });
-        //   await template.setVariables(vars);
-        // }
 
         res.json(template);
       } else {

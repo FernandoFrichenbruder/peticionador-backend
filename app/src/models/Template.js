@@ -2,20 +2,13 @@ const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../../config/db-connect');
 
   class Template extends Model {
-    // static associate(models) {
-    //   this.belongsToMany(models.Category, {
-    //     through: 'categories_templates',
-    //     foreignKey: 'template_id',
-    //     as: 'categories',
-    //   });
-
-    //   this.belongsToMany(models.Variable, {
-    //     through: 'templates_variables',
-    //     foreignKey: 'template_id',
-    //     as: 'variables',
-    //   });
-
-    // }
+    static associate(models) {
+      models.Template.belongsToMany(models.Category, {
+        through: "category_template",
+        as: "CategoryTemplate",
+        foreignKey: "template_id",
+      });
+    }
   }
   Template.init({
     id: {
