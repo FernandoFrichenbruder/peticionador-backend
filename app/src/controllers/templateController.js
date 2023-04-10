@@ -4,7 +4,15 @@ class TemplateController {
   async list(req, res, next) {
     try {
       const templates = await Template.findAll({
-        include: ['categories', 'variables'],
+        include: [
+          { model: Category,
+            as: 'CategoryTemplate',
+            attributes: ["id", "name"],
+            through: {
+              attributes: [],
+            }
+          },
+        ],
       });
       res.json(templates);
     } catch (error) {
@@ -17,7 +25,15 @@ class TemplateController {
 
     try {
       const template = await Template.findByPk(id, {
-        include: ['categories', 'variables'],
+        include: [
+          { model: Category,
+            as: 'CategoryTemplate',
+            attributes: ["id", "name"],
+            through: {
+              attributes: [],
+            }
+          },
+        ],
       });
 
       if (template) {
@@ -33,7 +49,7 @@ class TemplateController {
   }
 
   async create(req, res, next) {
-    const { title, text, categories, variables } = req.body;
+    const { title, text, categories } = req.body;
 
     try {
       const template = await Template.create({
@@ -47,17 +63,17 @@ class TemplateController {
             id: categories,
           },
         });
-        await template.addCategories(cats);
+        await template.addCategoryTemplate(cats);
       }
 
-      if (variables && variables.length > 0) {
-        const vars = await Variable.findAll({
-          where: {
-            id: variables,
-          },
-        });
-        await template.addVariables(vars);
-      }
+      // if (variables && variables.length > 0) {
+      //   const vars = await Variable.findAll({
+      //     where: {
+      //       id: variables,
+      //     },
+      //   });
+      //   await template.addVariables(vars);
+      // }
 
       res.status(201).json(template);
     } catch (error) {
@@ -67,7 +83,7 @@ class TemplateController {
 
   async update(req, res, next) {
     const { id } = req.params;
-    const { title, text, categories, variables } = req.body;
+    const { title, text, categories } = req.body;
 
     try {
       const template = await Template.findByPk(id);
@@ -84,17 +100,17 @@ class TemplateController {
               id: categories,
             },
           });
-          await template.setCategories(cats);
+          await template.setCategoryTemplate(cats);
         }
 
-        if (variables) {
-          const vars = await Variable.findAll({
-            where: {
-              id: variables,
-            },
-          });
-          await template.setVariables(vars);
-        }
+        // if (variables) {
+        //   const vars = await Variable.findAll({
+        //     where: {
+        //       id: variables,
+        //     },
+        //   });
+        //   await template.setVariables(vars);
+        // }
 
         res.json(template);
       } else {
