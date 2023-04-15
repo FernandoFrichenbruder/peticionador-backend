@@ -4,6 +4,7 @@ const templatesController = require('../controllers/templateController');
 
 router.get('/', templatesController.list);
 router.get('/:id', templatesController.getById);
+router.post('/filter', templatesController.filterTemplatesByCategory);
 router.post('/', templatesController.create);
 router.put('/:id', templatesController.update);
 router.delete('/:id', templatesController.delete);

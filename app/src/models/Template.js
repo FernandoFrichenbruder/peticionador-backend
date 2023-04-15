@@ -8,6 +8,20 @@ const sequelize = require('../../config/db-connect');
         as: "CategoryTemplate",
         foreignKey: "template_id",
       });
+
+      models.Template.belongsToMany(models.Template, {
+        through: "template_hierarchy",
+        as: "ParentTemplate",
+        foreignKey: "child_template_id",
+        otherKey: "parent_template_id",
+      });
+      
+      models.Template.belongsToMany(models.Template, {
+        through: "template_hierarchy",
+        as: "ChildTemplate",
+        foreignKey: "parent_template_id",
+        otherKey: "child_template_id",
+      });
     }
   }
   Template.init({
@@ -25,14 +39,16 @@ const sequelize = require('../../config/db-connect');
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    type: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    }
   }, {
     sequelize,
     modelName: 'Template',
     tableName: 'templates',
-    underscored: true,
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
   });
 
   module.exports = Template;
