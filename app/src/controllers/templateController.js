@@ -1,4 +1,5 @@
 const { Template, Category } = require('../models');
+const { Op } = require("sequelize");
 
 class TemplateController {
   async list(req, res, next) {
@@ -25,16 +26,18 @@ class TemplateController {
       });
       res.json(templates);
     } catch (error) {
+      console.error("Error: ", error);
       next(error);
     }
   }
 
   async filterTemplatesByCategory(req, res) {
-    const { type, categoryIds } = req.body;
+    console.log("O CÓDIFO CHEGOU AQUI");
+    console.log("req.body", req.body)
+    const { type, categories } = req.body;
     const where = type === 'all' ? {} : { type };
-    const whereCategories = categoryIds && categoryIds.length > 0 ? { id: categoryIds } : {};
+    const whereCategories = categories && categories.length > 0 ? { id: categories.id } : {};
 
-  
     try {
       const templates = await Template.findAll({
         include: [
@@ -59,14 +62,46 @@ class TemplateController {
         where,
         attributes: ["id", "title", "type"],
       });
-  
+
       res.status(200).json(templates);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Server Error' });
     }
   }
-  
+
+  async getTemplatesByCategories(req, res) {
+    try {
+      const categories = req.body.categories;
+      if (!categories || categories.length === 0) {
+        const templates = await Template.findAll({
+          attributes: ["id", "title", "type"],
+        });
+
+        res.status(200).send(templates);
+      } else {
+        const templates = await Template.findAll({
+          include: [
+            {
+              model: Category,
+              as: 'CategoryTemplate',
+            },
+          ],
+          attributes: ["id", "title", "type"],
+          where: {
+            '$CategoryTemplate.id$': { [Op.in]: categories }
+          }
+        });
+        console.log("O CÓDIFO CHEGOU AQUI");
+        res.status(200).send(templates);
+      }
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ error: "Erro ao buscar templates por categorias" });
+    }
+  };
+
 
   async getById(req, res, next) {
     const { id } = req.params;
